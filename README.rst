@@ -20,10 +20,14 @@ The main functionality is the combination of version ranges as best as possible,
 .. code-block:: python
 
     VersionRange('<=2.5,>1') & VersionRange('==2.*')
+    #>=2.0,<=2.5
+    VersionRange('<4.4') & VersionRange('>0,<=7')
+    #>=1.0,<4.4
+    VersionRange('<4.4') & VersionRange('>5.3')
+    #==5.3 and an optional warning or error (due to the mismatch in range)
 
-choose
-
-parse_dependency (comment, duplicate)
+.. comment:: choose
+.. commnet:: parse_dependency (comment, duplicate)
 
 
 Restrictions

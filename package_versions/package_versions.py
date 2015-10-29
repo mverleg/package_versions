@@ -250,8 +250,10 @@ class VersionRange():
 		if not type(self) is type(other):
 			raise NotImplementedError('can only take intersection with other {0:s} objects, not {1:s}.'
 				.format(str(type(self)), str(type(other))))
-		self.update_values(min=other.min, max=other.max, min_inclusive=other.min_inclusive, max_inclusive=other.max_inclusive, conflict=conflict)
-		self.prefer_highest = self.prefer_highest and other.prefer_highest
+		intersection = VersionRange.raw(min=self.min, max=self.max, min_inclusive=self.min_inclusive, max_inclusive=self.max_inclusive, conflict=conflict)
+		intersection.update_values(min=other.min, max=other.max, min_inclusive=other.min_inclusive, max_inclusive=other.max_inclusive, conflict=conflict)
+		intersection.prefer_highest = self.prefer_highest and other.prefer_highest
+		return intersection
 
 	def __and__(self, other):
 		return self.intersection(other, conflict='silent')
