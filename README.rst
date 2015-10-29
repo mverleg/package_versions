@@ -4,7 +4,7 @@ Package versions
 
 Implements version numbers, e.g. for use in your custom package/module/extension/addon system.
 
-Version ranges are stored as VersionRange and can be created using syntax similar to pip:
+Version ranges are stored as VersionRange and can be created using syntax similar to pip:: python
 
     print(VersionRange('==3'))
     # >=3.0,<4.0
@@ -13,7 +13,9 @@ Version ranges are stored as VersionRange and can be created using syntax simila
     print(VersionRange('==2.*'))
     # >=2.0,<3.0
 
-The main functionality is the combination of version ranges as best as possible, which is needed in case two packages rely on the same third package, but with different version limitations:
+The main functionality is the combination of version ranges as best as possible, which is needed in case two packages rely on the same third package, but with different version limitations:: python
+
+    print(VersionRange('<=2.5,>1') & VersionRange('==2.*'))
 
 choose
 
@@ -30,7 +32,7 @@ Version `11.7.3` is assumed to contain only bug-fixes compared to `11.7`, and as
 Tests
 -------------------------------
 
-There are a lot of py.test unit tests that you can run using:
+There are a lot of py.test unit tests that you can run using:: bash
 
     python3 -m pytest
 
