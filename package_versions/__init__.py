@@ -1,4 +1,4 @@
 
-from .versions import parse_dependency, VersionRange, VersionRangeMismatch, VersionFormatError
+from .versions_source import parse_dependency, VersionRange, VersionRangeMismatch, VersionFormatError
 
 

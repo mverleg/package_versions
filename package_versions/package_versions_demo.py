@@ -1,5 +1,5 @@
 
-from package_versions import VersionRange
+from .versions_source import VersionRange
 
 
 print(VersionRange('==3'))

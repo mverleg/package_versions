@@ -1,6 +1,6 @@
 
 from pytest import raises
-from .versions import parse_dependency, VersionRange, VersionFormatError, VersionRangeMismatch
+from .versions_source import parse_dependency, VersionRange, VersionFormatError, VersionRangeMismatch
 
 
 #todo: check that selection order doesn't matter
