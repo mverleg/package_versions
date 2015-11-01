@@ -111,7 +111,7 @@ class VersionRange():
 					print('min, self.max', min, self.max)
 					handle_conflict('Minimum {0:s} conflicts with maximum {1:s}; minimum (highest value) takes precedence.'
 						.format('{0:d}.{1:d}'.format(*min), '{0:d}.{1:d}'.format(*self.max)))
-					self.max = min
+					self.max = None
 					self.max_inclusive = True
 					""" The value is fixed so preference has no effect, but set it just for future updates. """
 					self.prefer_highest = False
@@ -125,6 +125,9 @@ class VersionRange():
 		#todo: this still accepts >1.0,<1.1 which cannot match; leave it like that?
 
 	def add_selections(self, selections, conflict = 'warning'):
+		if '_' in selections:
+			self.prefer_highest = False
+			selections = selections.replace('_', '')
 		for version in selections.split(','):
 			self.add_selection(version, conflict=conflict)
 
@@ -139,7 +142,7 @@ class VersionRange():
 		selection = selection.replace(' ', '').replace('=.', '=0.')
 		if not selection:
 			return
-		if selection.count(','):
+		if selection.count(',') or selection.count('_'):
 			raise Exception(('Version string "{0:s}" is incorrect. Perhaps you\'re trying to add a combined one; ' +
 				'you should use add_selections for that').format(selection))
 		if selection.count('.') > 1:
@@ -232,7 +235,8 @@ class VersionRange():
 		if self.max is not None:
 			properties.append('max_inclusive')
 		if not self._get_single():
-			properties.append('prefer_highest') #todo: tests
+			if self.min:
+				properties.append('prefer_highest') #todo: tests
 		for property in properties:
 			if not getattr(self, property) == getattr(other, property):
 				return False
@@ -256,11 +260,12 @@ class VersionRange():
 		return '{0:d}.{1:d}'.format(*tup)
 
 	def __str__(self):
+		suffix = '' if self.prefer_highest else '_'
 		if self.min == self.max == None:
-			return '==*'
+			return '==*' + suffix
 		single = self._get_single()
 		if single:
-			return '=={0:d}.{1:d}'.format(*single)
+			return '=={0:d}.{1:d}'.format(*single) + suffix
 		parts = []
 		if self.min is not None:
 			parts.append('>')
@@ -274,7 +279,7 @@ class VersionRange():
 			if self.max_inclusive:
 				parts.append('=')
 			parts.append(self.tuple_to_str(self.max))
-		return ''.join(parts)
+		return ''.join(parts) + suffix
 
 
 def parse_dependency(txt):
