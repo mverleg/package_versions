@@ -128,9 +128,10 @@ def test_make_range():
 	assert VersionRange('==1.*') == VersionRange('=1.*') == VersionRange.raw(min=(1, 0), max=(2, 0), min_inclusive=True, max_inclusive=False)
 	assert VersionRange('==2.7') == VersionRange('=2.7') == VersionRange.raw(min=(2, 7), max=(2, 7), min_inclusive=True, max_inclusive=True)
 	assert VersionRange('>1.0') == VersionRange.raw(min=(1, 0), min_inclusive=False)
+	assert VersionRange('==1.') == VersionRange('==1') == VersionRange.raw(min=(1, 0), min_inclusive=True, max=(2, 0), max_inclusive=False)
 	assert VersionRange('>1.') == VersionRange('>1') == VersionRange.raw(min=(2, 0), min_inclusive=True)
-	assert VersionRange('<1.') == VersionRange('<1') == VersionRange.raw(max=(1, 0), max_inclusive=False)
 	assert VersionRange('>=1.') == VersionRange('>=1') == VersionRange.raw(min=(1, 0), min_inclusive=True)
+	assert VersionRange('<1.') == VersionRange('<1') == VersionRange.raw(max=(1, 0), max_inclusive=False)
 	assert VersionRange('<=1.') == VersionRange('<=1') == VersionRange.raw(max=(2, 0), max_inclusive=False)
 	assert VersionRange('>=3.4') == VersionRange.raw(min=(3, 4), min_inclusive=True)
 	assert VersionRange('<9.0') == VersionRange.raw(max=(9, 0), max_inclusive=False)
@@ -169,14 +170,14 @@ def test_range_repr():
 	for repr in ('>=1.3,<2.0', '==1.7', '==*', '>=2.3_'):
 		assert str(VersionRange(repr)) == repr
 	assert str(VersionRange('=37.0')) == '==37.0'
-	assert str(VersionRange('==2.*,<2.5')) == '>=2.0,<2.5'
+	assert str(VersionRange('==2.*,<2.5')) in ('>=2.0,<2.5', '>=2.0,<=2.4')
 	assert str(VersionRange('<=1.4,>=1.4')) == '==1.4'
 	assert str(VersionRange('==1.*')) == '>=1.0,<2.0'
 	assert str(VersionRange('>=2.2,<2.3')) == '==2.2'
 	assert str(VersionRange('>2.2,<=2.3')) == '==2.3'
 	assert str(VersionRange('>2.2,<2.4')) == '==2.3'
-	assert str(VersionRange('<3.0,>1.0')) == '>1.0,<3.0'
-	assert str(VersionRange('<3.0,>1.0_')) == '>1.0,<3.0_'
+	assert str(VersionRange('<3.0,>1.0')) in ('>1.0,<3.0', '>=1.1,<3.0')
+	assert str(VersionRange('<3.0,>1.0_')) in ('>1.0,<3.0_', '>=1.1,<3.0_')
 
 
 def test_parse_dependency():
@@ -185,7 +186,7 @@ def test_parse_dependency():
 
 
 def test_comments():
-	package1, range1=parse_dependency('package>=1.0#,<2.0')
+	package1, range1 = parse_dependency('package>=1.0#,<2.0')
 	assert range1 == VersionRange('>=1.0')
 	package2, range2=parse_dependency('package>=1. # hello world')
 	assert package2 == 'package'
