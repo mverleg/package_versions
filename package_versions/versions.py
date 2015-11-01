@@ -155,6 +155,8 @@ class VersionRange():
 
 		:param versions: Iterable of available versions.
 		"""
+		if not versions:
+			raise Exception('No versions to choose from')
 		version_map = {}
 		for version in versions:
 			version_map[version] = str2nr(version, mx=self.limit)
