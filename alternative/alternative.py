@@ -6,6 +6,7 @@
 from logging import warning
 from re import findall, match
 from .settings import VersionRangeMismatch, VersionFormatError
+from package_versions import str2nr
 
 
 def intify(itrbl):
@@ -189,7 +190,6 @@ class VersionRangeAlt():
 
 		:param versions: Iterable of available versions.
 		"""
-		raise NotImplementedError('')
 		#todo: prefer_highest
 		#todo: try the first higher version
 		#todo: if no higher versions, try the first lower one

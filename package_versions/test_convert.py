@@ -1,6 +1,6 @@
 
 from pytest import raises
-from .convert import str2intrest, intrest2str, str2int, int2str, VersionTooHigh, VERSION_MAX
+from .convert import str2nrrest, nrrest2str, str2nr, nr2str, VersionTooHigh, VERSION_MAX
 
 
 def test_conversion():
@@ -12,14 +12,14 @@ def test_conversion():
 			for rest in test_rest:
 				for mx in test_max:
 					txt = '{0:d}.{1:d}.{2:s}'.format(major, minor, rest)
-					nr, rest = str2intrest(txt, mx=mx)
-					back = intrest2str(nr, rest, mx=mx)
+					nr, rest = str2nrrest(txt, mx=mx)
+					back = nrrest2str(nr, rest, mx=mx)
 					if not txt.rstrip('.') == back.rstrip('.'):
 						raise AssertionError('converting back and forth (with rest part) did not yield ' +
 							'the same result for "{0:s}" <-> "{1:s}"'.format(txt, back))
 			txt = '{0:d}.{1:d}'.format(major, minor)
-			nr = str2int(txt, mx=mx)
-			back = int2str(nr, mx=mx)
+			nr = str2nr(txt, mx=mx)
+			back = nr2str(nr, mx=mx)
 			if not txt == back:
 				raise AssertionError('converting back and forth (without rest part)' +
 					'did not yield the same result for "{0:s}"'.format(txt))
@@ -27,16 +27,16 @@ def test_conversion():
 
 def test_limit_errors():
 	with raises(VersionTooHigh):
-		str2int('100.0', mx=100)
+		str2nr('100.0', mx=100)
 	with raises(VersionTooHigh):
-		str2int('0.100', mx=100)
+		str2nr('0.100', mx=100)
 	with raises(VersionTooHigh):
-		str2int('99.0', mx=100)
+		str2nr('99.0', mx=100)
 	with raises(VersionTooHigh):
-		str2int('0.99', mx=100)
-	str2int('98.0', mx=100)
-	str2int('0.98', mx=100)
-	int2str #todo
+		str2nr('0.99', mx=100)
+	str2nr('98.0', mx=100)
+	str2nr('0.98', mx=100)
+	nr2str #todo
 
 
 def test_max():

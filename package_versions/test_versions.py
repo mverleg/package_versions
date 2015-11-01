@@ -195,4 +195,19 @@ def test_comments():
 		parse_dependency('#package>=1.0')
 
 
+def test_choose():
+	options = ['0.0.0', '2.8.', '2.1.unordered', '1.0.dev1', '2.2.words', '2.9.9', '999.999.0']
+	assert VersionRange('>=2.2,<2.9').choose(options) == '2.8.'
+	assert VersionRange('>=2.2,<=2.9').choose(options) == '2.9.9'
+	assert VersionRange('>2.2,<2.9').choose(options) == '2.8.'
+	assert VersionRange('>2.2,<=2.9').choose(options) == '2.9.9'
+	assert VersionRange('>2.2,<2.8').choose(options) == '2.8.'
+	assert VersionRange('>2.2,<2.7').choose(options) == '2.8.'
+	assert VersionRange('>2.2').choose(options) == '999.999.0'
+	assert VersionRange('>=2.2').choose(options) == '999.999.0'
+	assert VersionRange('<2.9').choose(options) == '2.8.'
+	assert VersionRange('<=2.9').choose(options) == '2.9.9'
+	assert VersionRange('>2.9,<7.0').choose(options[:-1]) == '2.9.9'
+	assert VersionRange('>10,<20').choose(options[:-1]) == '2.9.9'
+
 

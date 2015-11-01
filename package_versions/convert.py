@@ -2,7 +2,7 @@
 from package_versions.settings import VERSION_MAX, VersionTooHigh
 
 
-def str2intrest(txt, mx=VERSION_MAX):
+def str2nrrest(txt, mx=VERSION_MAX):
 	if txt.count('.') == 0:
 		major, minor, rest = '0' + txt, 0, ''
 	elif txt.count('.') == 1:
@@ -15,19 +15,19 @@ def str2intrest(txt, mx=VERSION_MAX):
 	return to_nr(major, minor, mx=mx), rest
 
 
-def intrest2str(nr, rest, mx=VERSION_MAX):
+def nrrest2str(nr, rest, mx=VERSION_MAX):
 	(major, minor), rest = to_tup(nr, mx=mx), '.{0:s}'.format(rest) if rest else ''
 	if not major < mx - 1:
 		raise VersionTooHigh('version too high (input//limit={0:d}//{1:d}={2:d})'.format(nr, mx, major))
 	return '{0:d}.{1:d}'.format(major, minor) + rest
 
 
-def int2str(nr, mx=VERSION_MAX):
-	return intrest2str(nr, '', mx=mx)
+def nr2str(nr, mx=VERSION_MAX):
+	return nrrest2str(nr, '', mx=mx)
 
 
-def str2int(txt, mx=VERSION_MAX):
-	return str2intrest(txt, mx=mx)[0]
+def str2nr(txt, mx=VERSION_MAX):
+	return str2nrrest(txt, mx=mx)[0]
 
 
 def to_tup(nr, mx=VERSION_MAX):

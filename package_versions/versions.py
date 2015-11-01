@@ -5,7 +5,7 @@
 
 from logging import warning
 from re import findall, match
-from convert import to_tup, to_nr
+from convert import to_tup, to_nr, str2nr
 from .settings import VersionRangeMismatch, VersionFormatError, VERSION_MAX
 
 pymin, pymax = min, max
@@ -155,10 +155,32 @@ class VersionRange():
 
 		:param versions: Iterable of available versions.
 		"""
-		raise NotImplementedError('')
-		#todo: prefer_highest
-		#todo: try the first higher version
-		#todo: if no higher versions, try the first lower one
+		version_map = {}
+		for version in versions:
+			version_map[version] = str2nr(version, mx=self.limit)
+		top_version, top_nr = None, 0
+		""" Try to find the highest value in range. """
+		for version, nr in version_map.items():
+			if nr >= top_nr:
+				if self.min <= nr <= self.max:
+					top_version, top_nr = version, nr
+		if top_version:
+			return top_version
+		""" Failing the above, try to find the lowest value above the range. """
+		top_nr = self.highest
+		for version, nr in version_map.items():
+			if nr < top_nr:
+				if nr >= self.max:
+					top_version, top_nr = version, nr
+		if top_version:
+			return top_version
+		""" Failing the above two, try to highest value below the range (so just the highest). """
+		top_nr = 0
+		for version, nr in version_map.items():
+			if nr > top_nr:
+				top_version, top_nr = version, nr
+		if top_version:
+			return top_version
 
 	def __eq__(self, other):
 		if not type(self) is type(other):
