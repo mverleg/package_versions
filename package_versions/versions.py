@@ -4,8 +4,8 @@
 """
 
 from logging import warning
-from re import findall, match
-from convert import to_tup, to_nr, str2nr
+from re import findall
+from .convert import to_tup, to_nr, str2nr
 from .settings import VersionRangeMismatch, VersionFormatError, VERSION_MAX
 
 pymin, pymax = min, max

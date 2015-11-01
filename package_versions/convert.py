@@ -1,5 +1,5 @@
 
-from package_versions.settings import VERSION_MAX, VersionTooHigh
+from .settings import VERSION_MAX, VersionTooHigh
 
 
 def str2nrrest(txt, mx=VERSION_MAX):

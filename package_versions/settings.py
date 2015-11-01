@@ -25,7 +25,7 @@ PACKAGE_NAME_MESSAGE = _('Package names may contain up to 32 lowercase letters, 
 	'and must start with a letter.')
 
 VERSION_REST_PATTERN = r'[^.][a-zA-Z0-9_\-.]+'
-VERSION_PATTERN = r'\d{1,4}(?:\.\d{1,4}(?:\.' + VERSION_REST_PATTERN + ')?)$'
+VERSION_PATTERN = r'\d{1,5}(?:\.\d{1,5}(?:\.' + VERSION_REST_PATTERN + ')?)?'
 VERSION_MESSAGE = _('Version numbers should be formatted like 1.0.dev7, the first two being under {0:d}'.format(VERSION_MAX - 2))
 
 FILENAME_PATTERN = r'[a-zA-Z0-9_\-.]{1,32}'
