@@ -1,0 +1,4 @@
+
+Make an alternative version with the tiny extra restriction that minor version is max 10.000 or something, then just store everything as min and max integers (10000*minor)+major
+
+
