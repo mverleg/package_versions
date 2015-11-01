@@ -3,17 +3,9 @@
 	Parse packages and versions, which follow pip format.
 """
 
-from argparse import ArgumentTypeError
 from logging import warning
-from re import fullmatch, findall, match  #todo: not in python 2.7
-
-
-class VersionRangeMismatch(Exception):
-	""" Tried to add range selections that don't overlap """
-
-
-class VersionFormatError(Exception):
-	""" Could not correctly interpret the package and/or version descrition string """
+from re import findall, match
+from .settings import VersionRangeMismatch, VersionFormatError
 
 
 def intify(itrbl):

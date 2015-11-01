@@ -1,10 +1,11 @@
 
 from pytest import raises
-from .package_versions import parse_dependency, VersionRange, VersionFormatError, VersionRangeMismatch
+from .versions import VersionRange, parse_dependency
+from .settings import VersionRangeMismatch, VersionFormatError
 
 
 #todo: check that selection order doesn't matter
-#todo: test some adjecent values 1.0 / 1.1 etc
+#todo: test some adjacent values 1.0 / 1.1 etc
 
 
 def test_range_equality():
