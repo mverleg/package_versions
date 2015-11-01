@@ -4,10 +4,6 @@ from .versions import VersionRange, parse_dependency
 from .settings import VersionRangeMismatch, VersionFormatError
 
 
-#todo: check that selection order doesn't matter
-#todo: test some adjacent values 1.0 / 1.1 etc
-
-
 def test_range_equality():
 	range1 = VersionRange.raw(min=(1, 3), max=(2, 0), min_inclusive=True, max_inclusive=False)
 	range2 = VersionRange.raw(min=(1, 3), max=(2, 0), min_inclusive=True, max_inclusive=False)
@@ -53,7 +49,8 @@ def test_range_checks():
 		VersionRange('<=2.2,>2.3')
 	with raises(VersionRangeMismatch):
 		VersionRange('==2.*,<=1.9')
-	#todo
+	with raises(VersionRangeMismatch):
+		VersionRange('>2,<3,<1')
 
 
 def test_range_noconflict():
@@ -92,7 +89,6 @@ def test_range_conflict_resolution():
 	assert vr == VersionRange.raw(min=(2, 3), max=None, min_inclusive=False, prefer_highest=False)
 	vr = VersionRange('<=2.2')
 	vr.add_selection('>2.3', conflict='silent')
-	print(vr, VersionRange.raw(min=(2, 3), max=None, min_inclusive=False, prefer_highest=False))
 	assert vr == VersionRange.raw(min=(2, 3), max=None, min_inclusive=False, prefer_highest=False)
 	vr = VersionRange('>=2.3')
 	vr.add_selection('<2.2', conflict='silent')
@@ -118,12 +114,12 @@ def test_range_conflict_resolution():
 	vr = VersionRange('>4.0,<5')
 	vr.add_selection('>7.0', conflict='silent')
 	assert vr == VersionRange.raw(min=(7, 0), max=None, min_inclusive=False, prefer_highest=False)
-
-
-def test_intersection():
-	pass
-	#VersionRange('>=4.0,<=6.0') & VersionRange('>=3.0,<=5')
-	#todo
+	vr = VersionRange('<140')
+	vr.add_selection('<=140', conflict='silent')
+	assert vr == VersionRange.raw(max=(140, 0), max_inclusive=False)
+	vr = VersionRange('>=999.99')
+	vr.add_selection('>999.99', conflict='silent')
+	assert vr == VersionRange.raw(min=(999, 99), min_inclusive=False)
 
 
 def test_make_range():
@@ -170,7 +166,7 @@ def test_incorrect_version():
 
 
 def test_range_repr():
-	for repr in ('>=1.3,<2.0', '==1.7', '==*'):
+	for repr in ('>=1.3,<2.0', '==1.7', '==*', '>=2.3_'):
 		assert str(VersionRange(repr)) == repr
 	assert str(VersionRange('=37.0')) == '==37.0'
 	assert str(VersionRange('==2.*,<2.5')) == '>=2.0,<2.5'
@@ -180,7 +176,7 @@ def test_range_repr():
 	assert str(VersionRange('>2.2,<=2.3')) == '==2.3'
 	assert str(VersionRange('>2.2,<2.4')) == '==2.3'
 	assert str(VersionRange('<3.0,>1.0')) == '>1.0,<3.0'
-	#todo
+	assert str(VersionRange('<3.0,>1.0_')) == '>1.0,<3.0_'
 
 
 def test_parse_dependency():
@@ -196,5 +192,6 @@ def test_comments():
 	assert range2 == VersionRange('>=1')
 	with raises(VersionFormatError):
 		parse_dependency('#package>=1.0')
+
 
 

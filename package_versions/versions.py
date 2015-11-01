@@ -52,7 +52,6 @@ class VersionRange():
 		:param conflict: What to do in case of failure: 'silent', 'warning' or 'error'.
 		"""
 		def handle_conflict(msg):
-			print('handling', conflict, 'for', msg)
 			if conflict == 'silent':
 				return
 			elif conflict == 'warning':
@@ -65,7 +64,6 @@ class VersionRange():
 			max = self.max
 		if min_inclusive is not None and min is None:
 			min = self.min
-		#todo: problem: update from exclusive to inclusive (same value) shouldn't be possible as this expands the range
 		if max is not None:
 			""" New values have been provided. """
 			if self.max is None or max < self.max or (max == self.max and not max_inclusive and self.max_inclusive):
@@ -79,21 +77,17 @@ class VersionRange():
 							empty_range = True
 				if empty_range:
 					""" The values of max and min create an empty range; update the lower one (which is the minimum). """
-					print('max updated from', self.max, self.max_inclusive, 'to', max, max_inclusive, '(conflict mode)')  #todo
 					handle_conflict('Maximum {0:s} conflicts with minimum {1:s}; minimum (highest value) takes precedence, but lower values not preferred.'
 						.format('{0:d}.{1:d}'.format(*max), '{0:d}.{1:d}'.format(*self.min)))
 					self.prefer_highest = False
 				else:
 					""" The value of max and min are not in conflict; simply update. """
-					print('max updated from', self.max, self.max_inclusive, 'to', max, max_inclusive)  #todo
 					self.max = max
 					self.max_inclusive = max_inclusive
 			else:
 				""" The old value was narrower, so we ignore this new value. (This is no cause for a warning). """
-				print('max NOT updated from', self.max, self.max_inclusive, 'to', max, max_inclusive)  #todo
 		if min is not None:
 			""" New values have been provided. """
-			#todo: test this for max too
 			if self.min is None or min > self.min or (min == self.min and not min_inclusive and self.min_inclusive):
 				""" There is no old value, or there is an old value but ours is narrower, so we should update. """
 				empty_range = False
@@ -101,28 +95,19 @@ class VersionRange():
 					if min > self.max:
 						empty_range = True
 					elif min == self.max:
-						print('  min == self.max', min, self.max)
-						if not (min_inclusive and (max_inclusive or self.max_inclusive)):  #todo: doubtful line
-							print('  min_inclusive or (max_inclusive or self.max_inclusive)', min_inclusive, max_inclusive, self.max_inclusive)
+						if not (min_inclusive and (max_inclusive or self.max_inclusive)):
 							empty_range = True
 				if empty_range:
 					""" The values of max and min create an empty range; update the lower one (which is the minimum). """
-					print('min updated from', self.min, self.min_inclusive, 'to', min, min_inclusive, '(conflict mode)')  #todo
-					print('min, self.max', min, self.max)
 					handle_conflict('Minimum {0:s} conflicts with maximum {1:s}; minimum (highest value) takes precedence.'
 						.format('{0:d}.{1:d}'.format(*min), '{0:d}.{1:d}'.format(*self.max)))
 					self.max = None
 					self.max_inclusive = True
 					""" The value is fixed so preference has no effect, but set it just for future updates. """
 					self.prefer_highest = False
-				else:
-					print('min updated from', self.min, self.min_inclusive, 'to', min, min_inclusive)  #todo
 				""" Update to the target values independent of conflict """
 				self.min = min
 				self.min_inclusive = min_inclusive
-			else:
-				print('min NOT updated from', self.min, self.min_inclusive, 'to', min, min_inclusive)  #todo
-		#todo: this still accepts >1.0,<1.1 which cannot match; leave it like that?
 
 	def add_selections(self, selections, conflict = 'warning'):
 		if '_' in selections:
@@ -138,7 +123,6 @@ class VersionRange():
 		:param selection: A single selection (without comma), like '>=1.3'.
 		:param conflict: What to do in case of failure: 'silent', 'warning' or 'error'.
 		"""
-		print('BEFORE add_selection', selection, str(self))
 		selection = selection.replace(' ', '').replace('=.', '=0.')
 		if not selection:
 			return
@@ -168,9 +152,7 @@ class VersionRange():
 				if minor is None:
 					self.update_values(min=(major, 0), max=(major + 1, 0), min_inclusive=True, max_inclusive=False, conflict=conflict)
 				else:
-					print('yolo')
 					self.update_values(min=(major, minor), max=(major, minor), min_inclusive=True, max_inclusive=True, conflict=conflict)
-					print('yolo done')
 		if selection.startswith('>'):
 			incl = selection.startswith('>=')
 			found = findall(r'^>=?(\d+)(?:\.(\d*))?$', selection)
@@ -200,7 +182,6 @@ class VersionRange():
 					self.update_values(max=(major, 0), max_inclusive=False, conflict=conflict)
 			else:
 				self.update_values(max=(major, minor), max_inclusive=incl, conflict=conflict)
-		print('add_selection', selection, str(self))
 
 	def choose(self, versions):
 		"""
@@ -260,12 +241,11 @@ class VersionRange():
 		return '{0:d}.{1:d}'.format(*tup)
 
 	def __str__(self):
-		suffix = '' if self.prefer_highest else '_'
-		if self.min == self.max == None:
-			return '==*' + suffix
+		if self.min is self.max is None:
+			return '==*'
 		single = self._get_single()
 		if single:
-			return '=={0:d}.{1:d}'.format(*single) + suffix
+			return '=={0:d}.{1:d}'.format(*single)
 		parts = []
 		if self.min is not None:
 			parts.append('>')
@@ -279,7 +259,9 @@ class VersionRange():
 			if self.max_inclusive:
 				parts.append('=')
 			parts.append(self.tuple_to_str(self.max))
-		return ''.join(parts) + suffix
+		if not self.prefer_highest and self.min:
+			parts.append('_')
+		return ''.join(parts)
 
 
 def parse_dependency(txt):
