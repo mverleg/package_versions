@@ -3,16 +3,22 @@
 	Parse packages and versions, which follow pip format.
 """
 
+from collections import OrderedDict
 from logging import warning
 from re import findall
 from .convert import to_tup, to_nr, str2nr
-from .settings import VersionRangeMismatch, VersionFormatError, VERSION_MAX
-
-pymin, pymax = min, max
+from .settings import VersionRangeMismatch, VersionFormatError, VERSION_MAX, PACKAGE_RANGE_PATTERN
 
 
-def intify(itrbl):
-	return [int(val) if val else None for val in itrbl]
+def version_problem_notify(txt, conflict):
+	if conflict == 'silent':
+		return
+	elif conflict == 'warning':
+		warning(txt)
+	elif conflict == 'error':
+		raise VersionRangeMismatch(txt)
+	else:
+		raise NotImplementedError('Unknown conflict mode "{0:}"'.format(conflict))
 
 
 class VersionRange():
@@ -83,14 +89,7 @@ class VersionRange():
 					self.prefer_highest = False
 					conflict_txt = 'Maximum {0:s} conflicts with minimum {1:s}; minimum is higher so takes it precedence, but lower values in range are now preferred.'.format('{0:d}.{1:d}'.format(*self.to_tup(max)), '{0:d}.{1:d}'.format(*self.to_tup(self.min)))
 		if conflict_txt:
-			if conflict == 'silent':
-				return
-			elif conflict == 'warning':
-				warning(conflict_txt)
-			elif conflict == 'error':
-				raise VersionRangeMismatch(conflict_txt)
-			else:
-				raise NotImplementedError('Unknown conflict mode "{0:}"'.format(conflict))
+			version_problem_notify(conflict_txt, conflict=conflict)
 
 	def add_selections(self, selections, conflict = 'warning'):
 		if '_' in selections:
@@ -110,7 +109,7 @@ class VersionRange():
 		if not selection:
 			return
 		if selection.count(',') or selection.count('_'):
-			raise Exception(('Version string "{0:s}" is incorrect. Perhaps you\'re trying to add a combined one; ' +
+			raise VersionFormatError(('Version string "{0:s}" is incorrect. Perhaps you\'re trying to add a combined one; ' +
 				'you should use add_selections for that').format(selection))
 		if selection.count('.') > 1:
 			raise VersionFormatError(('Version string "{0:s}" is incorrect. Perhaps it contains a version longer than 2 numbers ' +
@@ -149,14 +148,14 @@ class VersionRange():
 			raise VersionFormatError('Version (in)equality operator "{0:s}" not recognized. ' +
 				'Full operation "{1:s}"'.format(operation, selection))
 
-	def choose(self, versions):
+	def choose(self, versions, conflict='silent'):
 		"""
 		Choose the highest version in the range.
 
 		:param versions: Iterable of available versions.
 		"""
 		if not versions:
-			raise Exception('No versions to choose from')
+			raise VersionRangeMismatch('No versions to choose from')
 		version_map = {}
 		for version in versions:
 			version_map[version] = str2nr(version, mx=self.limit)
@@ -168,6 +167,9 @@ class VersionRange():
 					top_version, top_nr = version, nr
 		if top_version:
 			return top_version
+		""" We need to look outside the range, so maybe give a warning. """
+		version_problem_notify('No matching version found for range "{0:s}" from options "{1:s}"; other options might be considered.'.format(
+			str(self), '/'.join(str(v) for v in versions)), conflict=conflict)
 		""" Failing the above, try to find the lowest value above the range. """
 		top_nr = self.highest
 		for version, nr in version_map.items():
@@ -200,9 +202,10 @@ class VersionRange():
 		if not type(self) is type(other):
 			raise NotImplementedError('can only take intersection with other {0:s} objects, not {1:s}.'
 				.format(str(type(self)), str(type(other))))
-		intersection = VersionRange.raw(min=self.min, max=self.max, conflict=conflict)
-		intersection.update_values(min=other.min, max=other.max, conflict=conflict)
+		intersection = VersionRange.raw()
 		intersection.prefer_highest = self.prefer_highest and other.prefer_highest
+		intersection.update_values(min=self.min, max=self.max, conflict=conflict)
+		intersection.update_values(min=other.min, max=other.max, conflict=conflict)
 		return intersection
 
 	def __and__(self, other):
@@ -238,15 +241,40 @@ class VersionRange():
 			parts.append('_')
 		return ''.join(parts)
 
+	def __repr__(self):
+		return '{1:s}({0:s})'.format(self.__str__(), self.__class__.__name__)
+
+	def __format__(self, format_spec):
+		if format_spec == 's':
+			return str(self)
+		return super(VersionRange, self).__format__(format_spec)
+
 
 def parse_dependency(txt):
-	txt = txt.split('#')[0]
+	txt = txt.split('#')[0].strip().lower()
+	if not txt:
+		return None
 	try:
-		package = findall(r'^([a-zA-Z0-9_\-]*)[><=*\\z]', txt)[0]
-		versions = findall(r'^[a-zA-Z0-9_\-]*([><=*][><=*0-9. ]*)$', txt)[0]
+		name, versions = findall(r'^{0:s}$'.format(PACKAGE_RANGE_PATTERN), txt)[0]
 	except IndexError:
-		raise VersionFormatError('Given text "{0:s}" does not seem to be formatted correctly'.format(txt))
+		raise VersionFormatError(('Given text "{0:s}" does not seem to be formatted correctly ' +
+			'(according to pattern "{1:s}")"').format(txt, PACKAGE_RANGE_PATTERN))
 	vrange = VersionRange(versions)
-	return package, vrange
+	return name, vrange
+
+
+def parse_dependencies(txt, duplicates='silent'):
+	dependencies = OrderedDict()
+	for line in txt.splitlines():
+		result = parse_dependency(line)
+		if result:
+			name, range = result
+			if name in dependencies:
+				version_problem_notify('Package with name "{0:s}" appeared twice: "{1:s}" and "{2:s}"'
+					.format(name, dependencies[name], range), conflict=duplicates)
+				dependencies[name] = dependencies[name] & range
+			else:
+				dependencies[name] = range
+	return dependencies
 
 

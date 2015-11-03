@@ -1,6 +1,7 @@
 
+from collections import OrderedDict
 from pytest import raises
-from .versions import VersionRange, parse_dependency
+from .versions import VersionRange, parse_dependency, parse_dependencies
 from .settings import VersionRangeMismatch, VersionFormatError
 
 
@@ -122,6 +123,15 @@ def test_range_conflict_resolution():
 	assert vr == VersionRange.raw(min=(999, 99), min_inclusive=False)
 
 
+def test_conflict_errors():
+	vr = VersionRange('>4.0,<5')
+	with raises(VersionRangeMismatch):
+		vr.add_selection('>7.0', conflict='error')
+	vr = VersionRange('>4.0,<5')
+	with raises(VersionRangeMismatch):
+		vr.add_selection('<3.0', conflict='error')
+
+
 def test_make_range():
 	""" Note: single equality like =1.7 isn't officially supported, but don't break it without reason. """
 	assert VersionRange('==*') == VersionRange('=*') == VersionRange.raw(min=None, max=None)
@@ -166,6 +176,14 @@ def test_incorrect_version():
 		VersionRange('9=')
 
 
+def test_intersection():
+	assert VersionRange('==1.0') & VersionRange('==1.0') == VersionRange('==1.0')
+	assert VersionRange('>2.0') & VersionRange('<5') == VersionRange('>2.0,<5')
+	assert VersionRange('>2,<=6') & VersionRange('>4,<8') == VersionRange('>4,<=6')
+	assert VersionRange('>=2,<4') & VersionRange('>5.0,<=7.0') == VersionRange('>5.0,<=7.0_')
+	assert VersionRange('>5.0,<=7.0') & VersionRange('>=2,<4') == VersionRange('>5.0,<=7.0_')
+
+
 def test_range_repr():
 	for repr in ('>=1.3,<2.0', '==1.7', '==*', '>=2.3_'):
 		assert str(VersionRange(repr)) == repr
@@ -181,8 +199,23 @@ def test_range_repr():
 
 
 def test_parse_dependency():
-	assert parse_dependency('>=1.0') == ('', VersionRange('>=1.0'))
 	assert parse_dependency('package==*') == ('package', VersionRange('==*'))
+	assert parse_dependency('package==2.7') == ('package', VersionRange('==2.7'))
+	assert parse_dependency('package>=3') == ('package', VersionRange('>=3'))
+	assert parse_dependency('specialname123>2.0,<3') == ('specialname123', VersionRange('>2.0,<3'))
+
+
+def test_parse_dependencies():
+	inp = """PACK1>1.7\npack2>1.3,<6\ndup<=2.7\n#pack3==*\n\npack4<3.4#,>1.2\ndup>2.0#\n#"""
+	ref = OrderedDict([
+		('pack1', VersionRange('>1.7')),
+		('pack2', VersionRange('>1.3,<6')),
+		('dup', VersionRange('>2.0,<=2.7')),
+		('pack4', VersionRange('<3.4')),
+	])
+	assert parse_dependencies(inp) == ref
+	with raises(VersionRangeMismatch):
+		assert parse_dependencies('dup<=2.7\ndup>2.0', duplicates='error') == ref
 
 
 def test_comments():
@@ -191,8 +224,7 @@ def test_comments():
 	package2, range2=parse_dependency('package>=1. # hello world')
 	assert package2 == 'package'
 	assert range2 == VersionRange('>=1')
-	with raises(VersionFormatError):
-		parse_dependency('#package>=1.0')
+	assert parse_dependency('#package>=1.0') is None
 
 
 def test_choose():
@@ -209,5 +241,8 @@ def test_choose():
 	assert VersionRange('<=2.9').choose(options) == '2.9.9'
 	assert VersionRange('>2.9,<7.0').choose(options[:-1]) == '2.9.9'
 	assert VersionRange('>10,<20').choose(options[:-1]) == '2.9.9'
+
+
+#todo: test and make choosing based on 3rd part of version (alphabetic?)
 
 

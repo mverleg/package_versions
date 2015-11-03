@@ -128,7 +128,7 @@ class VersionRangeAlt():
 		if not selection:
 			return
 		if selection.count(',') or selection.count('_'):
-			raise Exception(('Version string "{0:s}" is incorrect. Perhaps you\'re trying to add a combined one; ' +
+			raise VersionFormatError(('Version string "{0:s}" is incorrect. Perhaps you\'re trying to add a combined one; ' +
 				'you should use add_selections for that').format(selection))
 		if selection.count('.') > 1:
 			raise VersionFormatError(('Version string "{0:s}" is incorrect. Perhaps it contains a version longer than 2 numbers ' +

@@ -8,7 +8,9 @@ def str2nrrest(txt, mx=VERSION_MAX):
 	elif txt.count('.') == 1:
 		(major, minor), rest = txt.split('.'), ''
 	else:
-		major, minor, rest = txt.split('.', maxsplit = 2)
+		parts = txt.split('.')
+		major, minor = parts[:2]
+		rest = '.'.join(parts[2:])
 	major, minor = int(major), int(minor)
 	if not (major < mx - 1 and minor < mx - 1):
 		raise VersionTooHigh('version too high (major={0:d}, minor={1:d}, limit={2:d})'.format(major, minor, mx))
