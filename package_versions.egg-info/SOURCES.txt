@@ -1,0 +1,15 @@
+README.rst
+setup.cfg
+setup.py
+package_versions/__init__.py
+package_versions/convert.py
+package_versions/demo.py
+package_versions/settings.py
+package_versions/test_convert.py
+package_versions/test_versions.py
+package_versions/versions.py
+package_versions.egg-info/PKG-INFO
+package_versions.egg-info/SOURCES.txt
+package_versions.egg-info/dependency_links.txt
+package_versions.egg-info/not-zip-safe
+package_versions.egg-info/top_level.txt
