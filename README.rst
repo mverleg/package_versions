@@ -51,6 +51,17 @@ And parse package dependencies:
 
 For a lot more examples, see the unit tests.
 
+Installation
+-------------------------------
+
+Install using:
+
+    pip install package-versions
+
+Import using:
+
+    from package_versions import VersionRange, parse_dependency, parse_dependencies
+
 Restrictions
 -------------------------------
 

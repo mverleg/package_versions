@@ -1,6 +1,6 @@
 Metadata-Version: 1.1
 Name: package-versions
-Version: 0.0
+Version: 1.0
 Summary: Version numbers for your package system: parsing of requirements, comparison of version ranges, etc.
 Home-page: https://github.com/mverleg/package_versions
 Author: (the author)
