@@ -60,7 +60,9 @@ Install using:
 
 Import using:
 
-    from package_versions import VersionRange, parse_dependency, parse_dependencies
+    from package_versions import VersionRange, parse_dependencies
+
+You're ready to go!
 
 Restrictions
 -------------------------------

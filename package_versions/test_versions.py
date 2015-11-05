@@ -176,6 +176,11 @@ def test_incorrect_version():
 		VersionRange('9=')
 
 
+def test_membership():
+	assert '3.4' in VersionRange('>2,<=6')
+	#todo more
+
+
 def test_intersection():
 	assert VersionRange('==1.0') & VersionRange('==1.0') == VersionRange('==1.0')
 	assert VersionRange('>2.0') & VersionRange('<5') == VersionRange('>2.0,<5')
