@@ -154,6 +154,7 @@ class VersionRange():
 
 		:param versions: Iterable of available versions.
 		"""
+		assert conflict in ('silent', 'warning', 'error')
 		if not versions:
 			raise VersionRangeMismatch('No versions to choose from')
 		version_map = {}
