@@ -11,7 +11,10 @@ def str2nrrest(txt, mx=VERSION_MAX):
 		parts = txt.split('.')
 		major, minor = parts[:2]
 		rest = '.'.join(parts[2:])
-	major, minor = int(major), int(minor)
+	try:
+		major, minor = int(major), int(minor)
+	except ValueError:
+		raise ValueError('improperly formatted version "{0}"'.format(txt))
 	if not (major < mx - 1 and minor < mx - 1):
 		raise VersionTooHigh('version too high (major={0:d}, minor={1:d}, limit={2:d})'.format(major, minor, mx))
 	return to_nr(major, minor, mx=mx), rest

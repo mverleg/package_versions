@@ -20,7 +20,7 @@ setup(
 	author_email='mdilligaf@gmail.com',
 	license='BSD 3-clause “Revised” License',
 	keywords=[],
-	version='1.0',
+	version='1.1',
 	packages=['package_versions'],
 	include_package_data=True,
 	zip_safe=False,

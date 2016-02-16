@@ -3,7 +3,7 @@
 .idea/
 .cache/
 /.pypirc
-/dist/
-/build/
+dist/
+build/
 /MANIFEST
 *.egg-info/
